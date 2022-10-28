@@ -1,0 +1,7 @@
+LICENSE
+README.md
+setup.py
+grade_school_math.egg-info/PKG-INFO
+grade_school_math.egg-info/SOURCES.txt
+grade_school_math.egg-info/dependency_links.txt
+grade_school_math.egg-info/top_level.txt
