@@ -1,2 +1,3 @@
 env*
 data_filtering/model/GoogleNews-vectors-negative300.bin
+.env
