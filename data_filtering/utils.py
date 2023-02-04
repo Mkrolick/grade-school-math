@@ -3,10 +3,11 @@ from dotenv import load_dotenv
 from os import getenv
 import requests
 import ast
-import re
+from re import split
 import string  
 from word_frequency import word_in_data, get_words_by_freq, subset_data, subset_data_index, subset_data_count, word_to_beat_index, subset_data_count, subset_data_index, subset_data, word_to_beat_index
-
+import pysbd
+import sent2vec
 
 load_dotenv()
 
@@ -71,6 +72,58 @@ def filter_words(text):
     return valid_words
 
 
+def convert_to_words(document):
+    chunks = document.split(" ")
+    words = [x for x in chunks if x not in string.punctuation]
+    lower_words = [x.lower() for x in words]
+    # clean punctuation on ends and start of words
+    clean_words = [x.strip(string.punctuation) for x in lower_words]
+    return clean_words
 
 
-print(filter_words("I like cats. they aren't cool."))
+# breaks data into sentences for sentence to vec processing
+def tokenize_sentence(data):
+    seg = pysbd.Segmenter(language="en", clean=False)
+    return seg.segment(data)
+    
+# load sentence to vec mode from wiki_unigrams.bin
+def get_sentence_to_vec(sentence):
+    #load vectorizer
+    model = sent2vec.Sent2vecModel()
+    model.load_model('wiki_unigrams.bin')
+    return model.embed_sentence(sentence)
+
+def words_in_sentence(sentence):
+    # split sentence into words
+    words = convert_to_words(sentence)
+    # remove words that are not in the data
+    valid_words = [x for x in words if word_in_data(x)]
+    return valid_words
+
+def split_sentece_by_word(sentence, word):
+    sentence_chunks = sentence.split(word)
+    return sentence_chunks
+
+
+    
+    
+
+
+
+
+# use requests to fetch data from https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt
+
+import requests
+import re
+
+url = "https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt"
+
+response = requests.request("GET", url)
+
+data = response.text
+print(data)
+
+print(convert_to_words(data))
+
+
+

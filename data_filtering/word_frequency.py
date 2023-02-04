@@ -53,6 +53,7 @@ def get_words_by_freq(data, count, include_word = True):
     else:
         return data[data["count"] < count]["word"].values
 
+
 def word_in_data(word):
     # make into class to reduce load time
     data = pd.read_csv("english_word_data/unigram_freq.csv")
