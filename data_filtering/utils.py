@@ -9,7 +9,8 @@ from word_frequency import word_in_data, get_words_by_freq, subset_data, subset_
 import pysbd
 import sent2vec
 
-load_dotenv()
+
+
 
 
 
@@ -85,13 +86,7 @@ def convert_to_words(document):
 def tokenize_sentence(data):
     seg = pysbd.Segmenter(language="en", clean=False)
     return seg.segment(data)
-    
-# load sentence to vec mode from wiki_unigrams.bin
-def get_sentence_to_vec(sentence):
-    #load vectorizer
-    model = sent2vec.Sent2vecModel()
-    model.load_model('wiki_unigrams.bin')
-    return model.embed_sentence(sentence)
+
 
 def words_in_sentence(sentence):
     # split sentence into words
@@ -109,21 +104,21 @@ def split_sentece_by_word(sentence, word):
     
 
 
+if __name__ == "__main__":
+    load_dotenv()
+    # use requests to fetch data from https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt
 
+    import requests
+    import re
 
-# use requests to fetch data from https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt
+    url = "https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt"
 
-import requests
-import re
+    response = requests.request("GET", url)
 
-url = "https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt"
+    data = response.text
+    print(data)
 
-response = requests.request("GET", url)
-
-data = response.text
-print(data)
-
-print(convert_to_words(data))
+    print(convert_to_words(data))
 
 
 

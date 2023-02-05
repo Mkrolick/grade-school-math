@@ -2,13 +2,14 @@ import json
 import os
 import re
 import torch as th
-
+from pathlib import Path
 
 def read_jsonl(path: str):
     with open(path) as fh:
         return [json.loads(line) for line in fh.readlines() if line]
 
-
+"""
+Linux Version
 def get_examples(split):
     path = os.path.join("data/", f"{split}.jsonl")
     examples = read_jsonl(path)
@@ -19,6 +20,21 @@ def get_examples(split):
 
     print(f"{len(examples)} {split} examples")
     return examples
+"""
+
+# Windows Version
+def get_examples(split):
+    path = os.path.join("data_filtering\\data\\", f"{split}.jsonl")
+    path = str(Path.cwd()) + "\\" + path 
+    examples = read_jsonl(path)
+
+    for ex in examples:
+        ex.update(question=ex["question"] + "\n")
+        ex.update(answer=ex["answer"] + "<|endoftext|>")
+
+    print(f"{len(examples)} {split} examples")
+    return examples
+
 
 
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
