@@ -5,9 +5,29 @@ import requests
 import ast
 from re import split
 import string  
-from word_frequency import word_in_data, get_words_by_freq, subset_data, subset_data_index, subset_data_count, word_to_beat_index, subset_data_count, subset_data_index, subset_data, word_to_beat_index
 import pysbd
 import sent2vec
+
+
+load_dotenv()
+
+
+
+def replacement_index(sentence, word, replacement):
+    lower_sentence = sentence.lower()
+    lower_word = word.lower()
+    index = lower_sentence.find(lower_word)
+    if index == -1:
+        raise ValueError("Word Not In Sentence")
+    # start sentence[:index], end sentence[index + len(word):]
+    return (index, index + len(word))
+
+# ast.literal_eval alternative
+def eval_code(code):
+    parsed = ast.parse(code, mode='eval')
+    fixed = ast.fix_missing_locations(parsed)
+    compiled = compile(fixed, '<string>', mode='eval')
+    return eval(compiled)
 
 
 
@@ -29,10 +49,13 @@ def define(word, remove_gaps = False):
 
         response = requests.request("GET", url, headers=headers)
         
-        response_object = ast.literal_eval(response.text)
+        # depricated eval function
+        # response_object = ast.literal_eval(response.text)
+
+        # eval object
+        response_object = eval_code(response.text)
         
-        #testing
-        #print(response_object)
+       
 
         # check if works
         if "success" in response_object.keys():
@@ -56,6 +79,37 @@ def define(word, remove_gaps = False):
     except:
         raise "Error Word Does Not Exist"
 
+# add threading to improve speed
+def synonyms(word):
+    try:
+        RapidApiKey = getenv("RAPID_API_KEY")
+
+        url = f"https://wordsapiv1.p.rapidapi.com/words/{word}/synonyms"
+
+        headers = {
+            "X-RapidAPI-Key": RapidApiKey,
+            "X-RapidAPI-Host": "wordsapiv1.p.rapidapi.com"
+        }
+
+        response = requests.request("GET", url, headers=headers)
+
+
+        # depricated eval function
+        # response_object = ast.literal_eval(response.text)
+
+        # eval object
+        response_object = eval_code(response.text)
+
+        
+
+        # check if works
+        if "success" in response_object.keys():
+            raise "Error Word Does Not Exist"
+        else:
+            return response_object["synonyms"]
+    except:
+        print("Failed To Get Synonyms")
+            
 
 def filter_words(text):
     # use WordPiece tokenizer to split words. Simple easy and fast implementation
@@ -68,9 +122,8 @@ def filter_words(text):
     # remove punctuation 
     words = [x for x in tokens if x not in string.punctuation]
     lower_words = [x.lower() for x in words]
-    valid_words = [x for x in lower_words if word_in_data(x)]
 
-    return valid_words
+    return lower_words
 
 
 def convert_to_words(document):
@@ -87,17 +140,27 @@ def tokenize_sentence(data):
     seg = pysbd.Segmenter(language="en", clean=False)
     return seg.segment(data)
 
-
+"""
+Depricated Code
 def words_in_sentence(sentence):
     # split sentence into words
     words = convert_to_words(sentence)
     # remove words that are not in the data
     valid_words = [x for x in words if word_in_data(x)]
     return valid_words
+"""
 
 def split_sentece_by_word(sentence, word):
     sentence_chunks = sentence.split(word)
     return sentence_chunks
+
+def max_iterator(iterator_list, previous_index = [], function = lambda x: print(x)):
+    if len(iterator_list) > 0: 
+        for i in range(iterator_list[-1]):
+            max_iterator(iterator_list[:-1], [i] + previous_index, function)
+    elif len(iterator_list) == 0:
+        function(previous_index)
+        #print(previous_index)
 
 
     
