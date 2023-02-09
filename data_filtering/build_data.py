@@ -2,8 +2,10 @@ from sent2vec.vectorizer import Vectorizer
 from nltk.tokenize import sent_tokenize
 from dataset import get_examples
 from word_frequency import *
+from scipy import spatial
 from pathlib import Path
 from utils import *
+import numpy as np
 import sys
 
 
@@ -12,8 +14,11 @@ import sys
 
 # Load sent2vec vectorizer
 # using bert-base-uncased
-# vectorizer.bert("bert-base-uncased")
+
+
 vectorizer = Vectorizer()
+vectorizer.bert("bert-base-uncased")
+
 
 # my own multi dimensional list iterator :)
 
@@ -46,10 +51,11 @@ training_exaples = get_examples("train")
 
 questions = [example["question"] for example in training_exaples]
 
-for question in questions:
+for example in training_exaples:
     
+    question = example["question"]
     sentences = tokenize_sentence(question)
-    
+    new_sentences = ""
     for sentence in sentences:
         
         # breaks apart sentence into words
@@ -80,69 +86,40 @@ for question in questions:
         index_end = [len(replacement_tuples[x]) for x in words]
 
 
-        max_iterator(index_end, previous_index = [], function = create_sentence, function_args = replacement_tuples)
-
-
-
+        sentences_unflattened = max_iterator([0,0,7], previous_index=[], function_args = [sentence, replacement_tuples])
         
+        # casting list to array and flattening it
+        sentences_unflattened = np.asarray(sentences_unflattened)
+
+        sentence_subsititions = sentences_unflattened.flatten()
+
+        comparison_sentences = [sentence] + sentence_subsititions
+
+        vectorizer.run(comparison_sentences)
+
+        # get sentence to vec for each sentence
+        sentence_vectors = vectorizer.vectors
+
+        # get sentence to vec for original sentence 
+        original_sentence_vector = sentence_vectors[0]
+
+        # get sentence to vec for all other sentences
+        other_sentence_vectors = sentence_vectors[1:]
+
+        # find the closest sentence to the original sentence's index
+        closest_sentence_index = np.argmin([spatial.distance.cosine(original_sentence_vector, x) for x in other_sentence_vectors])
+
+        # get the closest sentence
+        closest_sentence = comparison_sentences[closest_sentence_index]
+
+        new_sentences += closest_sentence
 
 
-
-
-
-#correlation_matrix = vectorizer.run(list(sentence))
-#print(correlation_matrix)
-
-            
-
-
-
+        #Make a confidence interval for the sentence to vec model, then label data with a confidence interval
+        #help elimates outlier data points
     
-
-sys.exit()
-"""
-
-for sentence in data:
-    correlation = sent_2_vec
-
-    # find acceptable correlation
-    words = sentence . split fancy
+    data_point = {"question": new_sentences, "answer": example["answer"]}
+    # append data point to new data set
 
 
-    if words in full_words:
-        get union of two sets
-        
-        for word in union:
-            
-            definiions.append()
-            definiions = []
-            for definiion in words:
-
-                sentce with modified defintion = xxxx
-
-                deffinninition.append(sentence_2vec( sentce with modified defintion ))
-
-            alered = [x - sentecne_2_vec for x in defintions]
-            
-            # use pythagorean theorem do find shortest distance
-            # take squares and then sqrt the values to find closest to real
-            take pythagorean theorem of all values by list comprehension
-            
-            store values then find min 
-
-            min is real value 
-
-            substitute real value in sentence
-
-            continue
-
-
-
-
-# first rounds
-
-"""
-            
-
-
-
+# make id feature on dataset

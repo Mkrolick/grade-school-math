@@ -182,25 +182,42 @@ def max_iterator(iterator_list, previous_index = [], function = lambda x: print(
         #print(previous_index)
 """
 
+def make_sentence(previous_index, sentence, replacement_tuples):
+    # key, replacement_tuples[index]
+    word_subs = [(replacement_tuple[0], replacement_tuple[1]) for index, replacement_tuple in enumerate(replacement_tuples.items())]
+    paired_value = [(replacement_tuple[0], replacement_tuple[1][previous_index[index]]) for index, replacement_tuple in enumerate(word_subs) if replacement_tuple[1] != []]
+
+    #print(previous_index)
+    #print(paired_value)
+
+    for word, replacement in paired_value:
+        # begging and ending of a sentence
+        sentence_indicies = replacement_index(sentence, word, "a")
+
+        if sentence_indicies[0] == 0:
+            sentence = replacement[:1].upper() + replacement[1:] + sentence[sentence_indicies[1]:]
+        else:
+            sentence = sentence[:sentence_indicies[0]] + replacement + sentence[sentence_indicies[1]:]
+        
+    return sentence
+
+def max_iterator(iterator_list, previous_index = [], function_args = None):
+    sentences = []
+    if len(iterator_list) > 0: 
+        # if the last index is 0, then we don't want to iterate over it and just call the function
+        if (iterator_list[-1] == 0):
+            sentence = max_iterator(iterator_list[:-1], [0] + previous_index, function_args)                                                                                                                                                                                                                                                              
+            sentences.append(sentence)
+
+        for i in range(iterator_list[-1]):
+            sentence = max_iterator(iterator_list[:-1], [i] + previous_index, function_args)                                                                                                                                                                                                                                                              
+            sentences.append(sentence)
+        print(iterator_list)
+        return sentences
+    elif len(iterator_list) == 0:
+        # start building the sentence
+        return make_sentence(previous_index, function_args[0], function_args[1])
+
+
+
     
-    
-
-
-if __name__ == "__main__":
-    load_dotenv()
-    # use requests to fetch data from https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt
-
-    import requests
-    import re
-
-    url = "https://gist.githubusercontent.com/phillipj/4944029/raw/75ba2243dd5ec2875f629bf5d79f6c1e4b5a8b46/alice_in_wonderland.txt"
-
-    response = requests.request("GET", url)
-
-    data = response.text
-    print(data)
-
-    print(convert_to_words(data))
-
-
-
