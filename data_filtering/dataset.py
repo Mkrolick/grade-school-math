@@ -23,17 +23,29 @@ def get_examples(split):
 """
 
 # Windows Version
-def get_examples(split):
-    path = os.path.join("data_filtering\\data\\", f"{split}.jsonl")
-    path = str(Path.cwd()) + "\\" + path 
-    examples = read_jsonl(path)
+def get_examples(split, jypter=False):
+    if jypter:
+        path = os.path.join("data\\", f"{split}.jsonl")
+        path = str(Path.cwd()) + "\\" + path 
+        examples = read_jsonl(path)
 
-    for ex in examples:
-        ex.update(question=ex["question"] + "\n")
-        ex.update(answer=ex["answer"] + "<|endoftext|>")
+        for ex in examples:
+            ex.update(question=ex["question"] + "\n")
+            ex.update(answer=ex["answer"] + "<|endoftext|>")
 
-    print(f"{len(examples)} {split} examples")
-    return examples
+        print(f"{len(examples)} {split} examples")
+        return examples
+    elif not jypter:
+        path = os.path.join("data_filtering\\data\\", f"{split}.jsonl")
+        path = str(Path.cwd()) + "\\" + path 
+        examples = read_jsonl(path)
+
+        for ex in examples:
+            ex.update(question=ex["question"] + "\n")
+            ex.update(answer=ex["answer"] + "<|endoftext|>")
+
+        print(f"{len(examples)} {split} examples")
+        return examples
 
 
 

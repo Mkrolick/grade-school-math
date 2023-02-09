@@ -13,7 +13,7 @@ load_dotenv()
 
 
 
-def replacement_index(sentence, word, replacement):
+def replacement_index(sentence, word):
     lower_sentence = sentence.lower()
     lower_word = word.lower()
     index = lower_sentence.find(lower_word)
@@ -154,14 +154,33 @@ def split_sentece_by_word(sentence, word):
     sentence_chunks = sentence.split(word)
     return sentence_chunks
 
-def max_iterator(iterator_list, previous_index = [], function = lambda x: print(x)):
+"""
+Depricated Code
+
+def create_sentence(sentence, word, replacement):
+    # get index of word in sentence
+    index = replacement_index(sentence, word, replacement)
+    # split sentence into two parts
+    sentence_chunks = split_sentece_by_word(sentence, word)
+    # create new sentence
+    new_sentence = sentence_chunks[0] + replacement + sentence_chunks[1]
+    return new_sentence
+
+def create_big_sentence(sentence, replacement_tuples):
+    new_sentence = sentence
+    for replacement_tuple in replacement_tuples:
+        new_sentence = create_sentence(new_sentence, replacement_tuple[0], replacement_tuple[1])
+    return new_sentence
+
+
+def max_iterator(iterator_list, previous_index = [], function = lambda x: print(x), function_args = None):
     if len(iterator_list) > 0: 
         for i in range(iterator_list[-1]):
-            max_iterator(iterator_list[:-1], [i] + previous_index, function)
+            max_iterator(iterator_list[:-1], [i] + previous_index, function, function_args)
     elif len(iterator_list) == 0:
-        function(previous_index)
+        function(previous_index, function_args)
         #print(previous_index)
-
+"""
 
     
     

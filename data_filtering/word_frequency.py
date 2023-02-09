@@ -56,9 +56,9 @@ def word_index(word):
 def synonym_better(word):
     synonym_list = synonyms(word)
     if synonym_list == None:
-        return ("None Error", False)
+        return ([], False)
     elif len(synonym_list) == 0:
-        return ("No Synonyms", False)
+        return ([], False)
     
 
     syn_index = [word_index(x) for x in synonym_list]
@@ -67,15 +67,15 @@ def synonym_better(word):
     for index, synonym in enumerate(syn_index):
         if synonym < word_to_beat_index(word) and synonym:
             # no need for indicies anymore
-            cleaned_synonym_list += [synonym_list[index]]
+            cleaned_synonym_list.append(synonym_list[index])
         else:
             #return ("Failing", False)
             continue
     
     if len(cleaned_synonym_list) == 0:
-        return ("No Synonyms", False)
+        return ([], False)
     else:
-        return (cleaned_synonym_list[0], True)
+        return (cleaned_synonym_list, True)
     
 
 

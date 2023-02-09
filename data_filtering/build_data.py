@@ -79,10 +79,8 @@ for question in questions:
 
         index_end = [len(replacement_tuples[x]) for x in words]
 
-        def create_sentence(word, index):
-            return sentence.replace(word, replacement_tuples[word][index])
 
-        max_iterator(index_end, )
+        max_iterator(index_end, previous_index = [], function = create_sentence, function_args = replacement_tuples)
 
 
 
