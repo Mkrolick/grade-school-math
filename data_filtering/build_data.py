@@ -6,6 +6,7 @@ from scipy import spatial
 from pathlib import Path
 from utils import *
 import numpy as np
+import json
 import sys
 
 
@@ -17,22 +18,7 @@ import sys
 
 
 vectorizer = Vectorizer()
-vectorizer.bert("bert-base-uncased")
 
-
-# my own multi dimensional list iterator :)
-
-def max_iterator(iterator_list, previous_index = []):
-    if len(iterator_list) > 0: 
-        for i in range(iterator_list[-1]):
-            max_iterator(iterator_list[:-1], [i] + previous_index)
-    elif len(iterator_list) == 0:
-        do_thing(previous_index)
-        print(previous_index)
-
-def do_thing(previous_index, sub_list):
-    sub_list.append()
-            
 
 # make this generalized
 summed_percentile = 0.68
@@ -55,6 +41,7 @@ for example in training_exaples:
     
     question = example["question"]
     sentences = tokenize_sentence(question)
+    sentences = [x for x in sentences]
     new_sentences = ""
     for sentence in sentences:
         
@@ -85,16 +72,23 @@ for example in training_exaples:
 
         index_end = [len(replacement_tuples[x]) for x in words]
 
+        #print(index_end)
+        #print(replacement_tuples)
+        #sys.exit()
 
-        sentences_unflattened = max_iterator([0,0,7], previous_index=[], function_args = [sentence, replacement_tuples])
+        sentences_unflattened = max_iterator(index_end, previous_index=[], function_args = [sentence, replacement_tuples])
+
+        
         
         # casting list to array and flattening it
         sentences_unflattened = np.asarray(sentences_unflattened)
 
         sentence_subsititions = sentences_unflattened.flatten()
 
-        comparison_sentences = [sentence] + sentence_subsititions
+        comparison_sentences = [sentence] + sentence_subsititions.tolist()
 
+        print(comparison_sentences)
+        
         vectorizer.run(comparison_sentences)
 
         # get sentence to vec for each sentence
@@ -110,16 +104,20 @@ for example in training_exaples:
         closest_sentence_index = np.argmin([spatial.distance.cosine(original_sentence_vector, x) for x in other_sentence_vectors])
 
         # get the closest sentence
-        closest_sentence = comparison_sentences[closest_sentence_index]
+        closest_sentence = comparison_sentences[1:][closest_sentence_index]
 
         new_sentences += closest_sentence
 
 
         #Make a confidence interval for the sentence to vec model, then label data with a confidence interval
         #help elimates outlier data points
-    
-    data_point = {"question": new_sentences, "answer": example["answer"]}
+        
+
+    data_point = {"question": new_sentences[:-2], "answer": example["answer"]}
     # append data point to new data set
 
+    with open("C:\\Users\\malco\\OneDrive\\Documents\\GitHub\\grade-school-math\\data_filtering\\new_data\\train.jsonl", "a") as f:
+        f.write(json.dumps(data_point))
+        f.write("\n")
 
-# make id feature on dataset
+

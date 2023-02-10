@@ -18,7 +18,11 @@ def replacement_index(sentence, word):
     lower_word = word.lower()
     index = lower_sentence.find(lower_word)
     if index == -1:
-        raise ValueError("Word Not In Sentence")
+        print(sentence)
+        print(word)
+
+        # presumably, error as word has character that is not in unicode
+        return None
     # start sentence[:index], end sentence[index + len(word):]
     return (index, index + len(word))
 
@@ -109,6 +113,7 @@ def synonyms(word):
             return response_object["synonyms"]
     except:
         print("Failed To Get Synonyms")
+        
             
 
 def filter_words(text):
@@ -192,9 +197,11 @@ def make_sentence(previous_index, sentence, replacement_tuples):
 
     for word, replacement in paired_value:
         # begging and ending of a sentence
-        sentence_indicies = replacement_index(sentence, word, "a")
+        sentence_indicies = replacement_index(sentence, word)
 
-        if sentence_indicies[0] == 0:
+        if sentence_indicies is None:
+            pass
+        elif sentence_indicies[0] == 0:
             sentence = replacement[:1].upper() + replacement[1:] + sentence[sentence_indicies[1]:]
         else:
             sentence = sentence[:sentence_indicies[0]] + replacement + sentence[sentence_indicies[1]:]

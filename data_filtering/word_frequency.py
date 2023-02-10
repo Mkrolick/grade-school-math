@@ -55,6 +55,8 @@ def word_index(word):
 # testing words
 def synonym_better(word):
     synonym_list = synonyms(word)
+    
+    # first statment catches if there are no synonyms
     if synonym_list == None:
         return ([], False)
     elif len(synonym_list) == 0:
