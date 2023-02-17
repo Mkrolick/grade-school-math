@@ -9,3 +9,5 @@ Possible Research Additions
 
 
 Make a cloud provisioned Docker Repository
+
+Add Load Bars

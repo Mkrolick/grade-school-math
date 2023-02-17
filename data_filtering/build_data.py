@@ -18,8 +18,6 @@ import sys
 
 
 vectorizer = Vectorizer()
-
-
 # make this generalized
 summed_percentile = 0.68
 words_to_remove = list(subset_percentile(summed_percentile)["word"])
@@ -32,11 +30,12 @@ print("Word Vocab Space", word_space() - count_word_to_remove)
 #sys.exit()
 
 training_exaples = get_examples("train")
-
+training_exaples = training_exaples[1396:]
 
 
 questions = [example["question"] for example in training_exaples]
 
+# resume training on last 1390 data points
 for example in training_exaples:
     
     question = example["question"]
@@ -77,8 +76,6 @@ for example in training_exaples:
         #sys.exit()
 
         sentences_unflattened = max_iterator(index_end, previous_index=[], function_args = [sentence, replacement_tuples])
-
-        
         
         # casting list to array and flattening it
         sentences_unflattened = np.asarray(sentences_unflattened)
@@ -87,8 +84,9 @@ for example in training_exaples:
 
         comparison_sentences = [sentence] + sentence_subsititions.tolist()
 
-        print(comparison_sentences)
-        
+        #reset vector value for each sentence
+        vectorizer.vectors = []
+
         vectorizer.run(comparison_sentences)
 
         # get sentence to vec for each sentence
@@ -101,9 +99,16 @@ for example in training_exaples:
         other_sentence_vectors = sentence_vectors[1:]
 
         # find the closest sentence to the original sentence's index
-        closest_sentence_index = np.argmin([spatial.distance.cosine(original_sentence_vector, x) for x in other_sentence_vectors])
+
+        vectors = [spatial.distance.cosine(original_sentence_vector, x) for x in other_sentence_vectors]
+
+        closest_sentence_index = np.argmin(vectors)
+
+        print(len(vectors))
+        
 
         # get the closest sentence
+        #print(closest_sentence_index)
         closest_sentence = comparison_sentences[1:][closest_sentence_index]
 
         new_sentences += closest_sentence
