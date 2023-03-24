@@ -21,15 +21,9 @@ global api_used
 api = 0
 
 global current_day 
-current = 0
+current = datetime.datetime.now().day
 
-# run a passive checker for new day and update current day
-def check_day():
-    global current_day
-    global api_used
-    if current_day != datetime.datetime.now().day:
-        current_day = datetime.datetime.now().day
-        api_used = 0
+starting_point = 0 
 
 
 
@@ -44,135 +38,139 @@ print("length of words to remove", count_word_to_remove)
 print("Word Vocab Space", word_space() - count_word_to_remove)
 
 
-#sys.exit()
-
 training_exaples = get_examples("train")
-training_exaples = training_exaples[1570:]
+training_exaples = training_exaples[starting_point:]
 
 
 questions = [example["question"] for example in training_exaples]
 
 # resume training on last 1390 data points
-
-for example in training_exaples:
-    skip = False    
-    question = example["question"]
-    sentences = tokenize_sentence(question)
-    sentences = [x for x in sentences]
-    new_sentences = ""
-    for sentence in sentences:
-        
-        # breaks apart sentence into words
-
-        #toeknizes and prelimiary filtering
-        words = filter_words(sentence) 
-
-        # remove words that are not in the data
-        valid_words = [x for x in words if word_in_data(x)]
-        
-        word_to_remove = [words for words in words if words in words_to_remove]
-
-        api_calls = len(word_to_remove)
-
-        # check if api calls are over 2500
-        if api_used + api_calls > 25000:
-            print("API CALLS EXCEEDED")
-            print("Taking a nap")
-
-            # sleep until new day
-            while current_day == datetime.datetime.now().day:
-                time.sleep(60)
-            print("Waking up")
-
-            # reset api calls
-            api_used = 0
-
-            # update api calls
-            api_used += api_calls
-
-            current_day = datetime.datetime.now().day
-
-        else: 
-            api_used += api_calls
-
-
-        replacement_tuples = {}
-        for word in word_to_remove:
-            # for word, appends valid synonym
-
-            replacement_tuples[word] = synonym_better(word)[0]
-            # dict structure is {word: [synonym, synonym, synonym]}
-
-        # make possible matrix of all possible combinations of sentences
-
-        # find where the word is in the sentence including uppercase and lowercase combinations
-        words = replacement_tuples.keys()
-        
-        #index_start = [0 for x in range(len(words))]
-
-        index_end = [len(replacement_tuples[x]) for x in words]
-
-        #print(index_end)
-        #print(replacement_tuples)
-        #sys.exit()
-        
-        
-
-        try:
-            sentences_unflattened = max_iterator(index_end, previous_index=[], function_args = [sentence, replacement_tuples])
+try:
+    for example in training_exaples:
+        starting_point += 1
+        skip = False    
+        question = example["question"]
+        sentences = tokenize_sentence(question)
+        sentences = [x for x in sentences]
+        new_sentences = ""
+        for sentence in sentences:
             
-            # casting list to array and flattening it
-            sentences_unflattened = np.asarray(sentences_unflattened)
+            # breaks apart sentence into words
 
-            sentence_subsititions = sentences_unflattened.flatten()
+            #toeknizes and prelimiary filtering
+            words = filter_words(sentence) 
 
-            comparison_sentences = [sentence] + sentence_subsititions.tolist()
+            # remove words that are not in the data
+            valid_words = [x for x in words if word_in_data(x)]
+            
+            word_to_remove = [words for words in words if words in words_to_remove]
 
-            #reset vector value for each sentence
-            vectorizer.vectors = []
+            api_calls = len(word_to_remove)
 
-            vectorizer.run(comparison_sentences)
+            # check if api calls are over 2500
+            if api_used + api_calls > 25000:
+                print("API CALLS EXCEEDED")
+                print("Taking a nap")
 
-            # get sentence to vec for each sentence
-            sentence_vectors = vectorizer.vectors
+                # sleep until new day
+                while current_day == datetime.datetime.now().day:
+                    time.sleep(60)
+                print("Waking up")
 
-            # get sentence to vec for original sentence 
-            original_sentence_vector = sentence_vectors[0]
+                # reset api calls
+                api_used = 0
 
-            # get sentence to vec for all other sentences
-            other_sentence_vectors = sentence_vectors[1:]
+                # update api calls
+                api_used += api_calls
 
-            # find the closest sentence to the original sentence's index
+                current_day = datetime.datetime.now().day
 
-            vectors = [spatial.distance.cosine(original_sentence_vector, x) for x in other_sentence_vectors]
-
-            closest_sentence_index = np.argmin(vectors)
-
-            print(len(vectors))
-        
-
-            # get the closest sentence
-            #print(closest_sentence_index)
-            closest_sentence = comparison_sentences[1:][closest_sentence_index]
-
-            new_sentences += closest_sentence
+            else: 
+                api_used += api_calls
 
 
-            #Make a confidence interval for the sentence to vec model, then label data with a confidence interval
-            #help elimates outlier data points
-        except:
-            skip = True
-            print("error")
+            replacement_tuples = {}
+            for word in word_to_remove:
+                # for word, appends valid synonym
+
+                replacement_tuples[word] = synonym_better(word)[0]
+                # dict structure is {word: [synonym, synonym, synonym]}
+
+            # make possible matrix of all possible combinations of sentences
+
+            # find where the word is in the sentence including uppercase and lowercase combinations
+            words = replacement_tuples.keys()
+            
+            #index_start = [0 for x in range(len(words))]
+
+            index_end = [len(replacement_tuples[x]) for x in words]
+
+            #print(index_end)
+            #print(replacement_tuples)
+            #sys.exit()
+            
+            
+
+            try:
+                sentences_unflattened = max_iterator(index_end, previous_index=[], function_args = [sentence, replacement_tuples])
+                
+                # casting list to array and flattening it
+                sentences_unflattened = np.asarray(sentences_unflattened)
+
+                sentence_subsititions = sentences_unflattened.flatten()
+
+                comparison_sentences = [sentence] + sentence_subsititions.tolist()
+
+                #reset vector value for each sentence
+                vectorizer.vectors = []
+
+                vectorizer.run(comparison_sentences)
+
+                # get sentence to vec for each sentence
+                sentence_vectors = vectorizer.vectors
+
+                # get sentence to vec for original sentence 
+                original_sentence_vector = sentence_vectors[0]
+
+                # get sentence to vec for all other sentences
+                other_sentence_vectors = sentence_vectors[1:]
+
+                # find the closest sentence to the original sentence's index
+
+                vectors = [spatial.distance.cosine(original_sentence_vector, x) for x in other_sentence_vectors]
+
+                closest_sentence_index = np.argmin(vectors)
+
+                print(len(vectors))
+            
+
+                # get the closest sentence
+                #print(closest_sentence_index)
+                closest_sentence = comparison_sentences[1:][closest_sentence_index]
+
+                new_sentences += closest_sentence
+
+
+                #Make a confidence interval for the sentence to vec model, then label data with a confidence interval
+                #help elimates outlier data points
+            except:
+                skip = True
+                print("error")
+                continue
+            
+        if skip:
             continue
-        
-    if skip:
-        continue
 
-    data_point = {"question": new_sentences[:-2], "answer": example["answer"]}
-    # append data point to new data set
+        data_point = {"question": new_sentences[:-2], "answer": example["answer"]}
+        # append data point to new data set
 
-    with open("C:\\Users\\malco\\OneDrive\\Documents\\GitHub\\grade-school-math\\data_filtering\\new_data\\train.jsonl", "a") as f:
-        f.write(json.dumps(data_point))
-        f.write("\n")
-
+        with open("C:\\Users\\malco\\OneDrive\\Documents\\GitHub\\grade-school-math\\data_filtering\\new_data\\train.jsonl", "a") as f:
+            f.write(json.dumps(data_point))
+            f.write("\n")
+except:
+    print("new starting point", starting_point)
+    print("api calls", api_used)
+    print("current day", current_day)
+    print("current time", datetime.datetime.now().time())
+    print("error")
 
