@@ -3,11 +3,11 @@ from nltk.tokenize import sent_tokenize
 from dataset import get_examples
 from word_frequency import *
 from scipy import spatial
-from pathlib import Path
 from utils import *
 import numpy as np
+import datetime
+import time
 import json
-import sys
 
 
 #train sent2vec
@@ -15,6 +15,23 @@ import sys
 
 # Load sent2vec vectorizer
 # using bert-base-uncased
+
+
+global api_used 
+api = 0
+
+global current_day 
+current = 0
+
+# run a passive checker for new day and update current day
+def check_day():
+    global current_day
+    global api_used
+    if current_day != datetime.datetime.now().day:
+        current_day = datetime.datetime.now().day
+        api_used = 0
+
+
 
 
 vectorizer = Vectorizer()
@@ -54,6 +71,29 @@ for example in training_exaples:
         valid_words = [x for x in words if word_in_data(x)]
         
         word_to_remove = [words for words in words if words in words_to_remove]
+
+        api_calls = len(word_to_remove)
+
+        # check if api calls are over 2500
+        if api_used + api_calls > 25000:
+            print("API CALLS EXCEEDED")
+            print("Taking a nap")
+
+            # sleep until new day
+            while current_day == datetime.datetime.now().day:
+                time.sleep(60)
+            print("Waking up")
+
+            # reset api calls
+            api_used = 0
+
+            # update api calls
+            api_used += api_calls
+
+            current_day = datetime.datetime.now().day
+
+        else: 
+            api_used += api_calls
 
 
         replacement_tuples = {}
