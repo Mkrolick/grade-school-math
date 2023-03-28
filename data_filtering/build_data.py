@@ -18,12 +18,12 @@ import json
 
 
 global api_used 
-api = 0
+api_used = 25000
 
 global current_day 
-current = datetime.datetime.now().day
+current_day = datetime.datetime.now().day
 
-starting_point = 0 
+starting_point = 4949
 
 
 

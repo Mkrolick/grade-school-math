@@ -2,3 +2,4 @@ env*
 data_filtering/model/GoogleNews-vectors-negative300.bin
 .env
 wiki_unigrams.bin
+data_filtering/new_data/train.jsonl
