@@ -18,7 +18,7 @@ import json
 
 
 global api_used 
-api_used = 25000
+api_used = 0
 
 global current_day 
 current_day = datetime.datetime.now().day
